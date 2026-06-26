@@ -7,3 +7,7 @@ test('shows target environment', () => {
   console.log('Running tests against environment:', env);
   expect(['dev', 'qa', 'prod', 'not set']).toContain(env);
 });
+
+test('subtracts two numbers correctly', () => {
+  expect(10 - 4).toBe(6);
+});

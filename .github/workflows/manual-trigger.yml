@@ -1,0 +1,47 @@
+name: Manual Trigger Exercise
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      env:
+        description: "Target environment to run tests against"
+        type: choice
+        options:
+          - dev
+          - qa
+          - prod
+        default: dev
+        required: true
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Show selected environment
+        run: echo "Running tests against ${{ github.event.inputs.env }} environment"
+
+      - name: Run tests
+        run: npm test
+        env:
+          TARGET_ENV: ${{ github.event.inputs.env }}
+
+      - name: Show test summary
+        run: |
+          echo "Tests completed for environment: ${{ github.event.inputs.env }}"
+          echo "Triggered by: ${{ github.actor }}"
+          echo "Event type: ${{ github.event_name }}"

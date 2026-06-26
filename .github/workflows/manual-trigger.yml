@@ -3,6 +3,8 @@ name: Manual Trigger Exercise
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
     inputs:
       env:
@@ -33,15 +35,28 @@ jobs:
         run: npm ci
 
       - name: Show selected environment
-        run: echo "Running tests against ${{ github.event.inputs.env }} environment"
+        run: echo "Running tests against ${{ github.event.inputs.env || 'default' }} environment"
 
       - name: Run tests
         run: npm test
         env:
-          TARGET_ENV: ${{ github.event.inputs.env }}
+          TARGET_ENV: ${{ github.event.inputs.env || 'dev' }}
 
       - name: Show test summary
         run: |
-          echo "Tests completed for environment: ${{ github.event.inputs.env }}"
+          echo "Tests completed"
           echo "Triggered by: ${{ github.actor }}"
           echo "Event type: ${{ github.event_name }}"
+
+      - name: PR-only step - post test summary comment
+        if: github.event_name == 'pull_request'
+        run: |
+          echo "======================================"
+          echo "THIS STEP ONLY RUNS ON PULL REQUESTS"
+          echo "======================================"
+          echo "PR number: ${{ github.event.pull_request.number }}"
+          echo "PR title: ${{ github.event.pull_request.title }}"
+          echo "Source branch: ${{ github.head_ref }}"
+          echo "Target branch: ${{ github.base_ref }}"
+          echo "In a real pipeline this step would post"
+          echo "a test coverage report as a PR comment."
